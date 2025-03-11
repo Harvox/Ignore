@@ -232,7 +232,7 @@ function library:Load(opts)
         BackgroundColor3 = Color3.fromRGB(255, 255, 255),
         FontSize = Enum.FontSize.Size14,
         TextSize = 14,
-        TextColor3 = Color3.fromRGB(255, 253, 121),
+        TextColor3 = Color3.fromRGB(255, 255, 255),
         Text = name,
         Font = Enum.Font.Gotham,
         TextXAlignment = Enum.TextXAlignment.Left,
