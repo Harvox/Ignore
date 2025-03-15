@@ -812,11 +812,12 @@ function sectionTypes:Slider(opts)
         utility.tween(fill, {0.3}, {Size = UDim2.new(sizeX, 0, 1, 0)})
 
         local value = ((max - min) * sizeX) + min
+        -- Apply rounding based on the round option
         if round then
             value = roundTo(value, decimals)
         end
         
-        title.Text = name .. ": " .. string.format("%.2f", value) .. valueType
+        title.Text = name .. ": " .. string.format("%." .. tostring(decimals) .. "f", value) .. valueType
 
         if flag then 
             library.flags[flag] = value
@@ -867,13 +868,14 @@ function sectionTypes:Slider(opts)
     sliderTypes = utility.format_table(sliderTypes)
 
     function sliderTypes:Set(value)
+        -- Apply rounding based on the round option
         if round then
             value = roundTo(value, decimals)
         end
         value = math.clamp(value, min, max)
 
         fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
-        title.Text = name .. ": " .. string.format("%.2f", value) .. valueType
+        title.Text = name .. ": " .. string.format("%." .. tostring(decimals) .. "f", value) .. valueType
     end
 
     function sliderTypes:Hide()
