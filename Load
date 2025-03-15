@@ -749,8 +749,7 @@ function library:Load(opts)
                 
                 return boxTypes
             end
-
-   function sectionTypes:Slider(opts)
+function sectionTypes:Slider(opts)
     local options = utility.format_table(opts)
     local name = options.name
     local min = options.min or 1
@@ -803,13 +802,18 @@ function library:Load(opts)
         Parent = slider
     })
 
+    local function roundTo(value, decimals)
+        local factor = 10 ^ decimals
+        return math.floor(value * factor + 0.5) / factor
+    end
+
     local function slide(input)
         local sizeX = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
         utility.tween(fill, {0.3}, {Size = UDim2.new(sizeX, 0, 1, 0)})
 
         local value = ((max - min) * sizeX) + min
         if round then
-            value = math.floor(value * (1 / decimals)) * decimals
+            value = roundTo(value, decimals)
         end
         
         title.Text = name .. ": " .. string.format("%.2f", value) .. valueType
@@ -864,7 +868,7 @@ function library:Load(opts)
 
     function sliderTypes:Set(value)
         if round then
-            value = math.floor(value * (1 / decimals)) * decimals
+            value = roundTo(value, decimals)
         end
         value = math.clamp(value, min, max)
 
