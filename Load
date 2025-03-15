@@ -751,130 +751,139 @@ function library:Load(opts)
             end
 
             function sectionTypes:Slider(opts)
-                local options = utility.format_table(opts)
-                local name = options.name
-                local min = options.min or 1
-                local max = options.max or 100
-                local decimals = options.decimals or 0.1
-                local default = options.default and math.clamp(options.default, min, max) or min
-                local valueType = options.valueType or "/" .. tostring(max)
-                local flag = options.flag or nil
-                local callback = options.callback or function() end
-                
-                local mouseOver = false
-                local sliding = false
+    local options = utility.format_table(opts)
+    local name = options.name
+    local min = options.min or 1
+    local max = options.max or 100
+    local round = opts.Round or true
+    local decimals = options.decimals or 0.1
+    local default = options.default and math.clamp(options.default, min, max) or min
+    local valueType = options.valueType or "/" .. tostring(max)
+    local flag = options.flag or nil
+    local callback = options.callback or function() end
+    
+    local mouseOver = false
+    local sliding = false
 
-                local slider = utility.create("Frame", {
-                    ZIndex = 6,
-                    Size = UDim2.new(1, 0, 0, 16),
-                    ClipsDescendants = true,
-                    BackgroundColor3 = theme.Slider,
-                    Parent = sectionContent
-                })
-                
-                utility.create("UICorner", {
-                    CornerRadius = UDim.new(0, 6),
-                    Parent = slider
-                })
-                
-                local fill = utility.create("Frame", {
-                    ZIndex = 7,
-                    Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
-                    BackgroundColor3 = theme.SliderFill,
-                    Parent = slider
-                })
-                
-                utility.create("UICorner", {
-                    CornerRadius = UDim.new(0, 6),
-                    Parent = fill
-                })
-                
-                local title = utility.create("TextLabel", {
-                    ZIndex = 8,
-                    Size = UDim2.new(1, 0, 1, 0),
-                    BackgroundTransparency = 1,
-                    BackgroundColor3 = Color3.fromRGB(255, 255, 255),
-                    FontSize = Enum.FontSize.Size12,
-                    TextSize = 12,
-                    TextColor3 = theme.TextColor,
-                    Text = name .. ": " .. default .. valueType,
-                    Font = Enum.Font.Gotham,
-                    Parent = slider
-                })
+    local slider = utility.create("Frame", {
+        ZIndex = 6,
+        Size = UDim2.new(1, 0, 0, 16),
+        ClipsDescendants = true,
+        BackgroundColor3 = theme.Slider,
+        Parent = sectionContent
+    })
+    
+    utility.create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = slider
+    })
+    
+    local fill = utility.create("Frame", {
+        ZIndex = 7,
+        Size = UDim2.new((default - min) / (max - min), 0, 1, 0),
+        BackgroundColor3 = theme.SliderFill,
+        Parent = slider
+    })
+    
+    utility.create("UICorner", {
+        CornerRadius = UDim.new(0, 6),
+        Parent = fill
+    })
+    
+    local title = utility.create("TextLabel", {
+        ZIndex = 8,
+        Size = UDim2.new(1, 0, 1, 0),
+        BackgroundTransparency = 1,
+        BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+        FontSize = Enum.FontSize.Size12,
+        TextSize = 12,
+        TextColor3 = theme.TextColor,
+        Text = name .. ": " .. default .. valueType,
+        Font = Enum.Font.Gotham,
+        Parent = slider
+    })
 
-                local function slide(input)
-                    local sizeX = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
-                    utility.tween(fill, {0.3}, {Size = UDim2.new(sizeX, 0, 1, 0)})
+    local function slide(input)
+        local sizeX = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
+        utility.tween(fill, {0.3}, {Size = UDim2.new(sizeX, 0, 1, 0)})
 
-                    local value = math.floor((((max - min) * sizeX) + min) * (decimals * 10)) / (decimals * 10)
-                    title.Text = name .. ": " .. value .. valueType
+        local value
+        if round then
+            value = math.floor((((max - min) * sizeX) + min) * (decimals * 10)) / (decimals * 10)
+        else
+            value = (((max - min) * sizeX) + min)
+        end
+        
+        title.Text = name .. ": " .. value .. valueType
 
-                    if flag then 
-                        library.flags[flag] = value
-                    end
+        if flag then 
+            library.flags[flag] = value
+        end
 
-                    callback(value)
-                end
+        callback(value)
+    end
 
-                slider.InputBegan:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        sliding = true
-                        utility.tween(fill, {0.2}, {BackgroundColor3 = theme.SliderFillSliding})
-                        slide(input)
-                    end
-                end)
+    slider.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            sliding = true
+            utility.tween(fill, {0.2}, {BackgroundColor3 = theme.SliderFillSliding})
+            slide(input)
+        end
+    end)
 
-                slider.InputEnded:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-                        utility.tween(fill, {0.2}, {BackgroundColor3 = theme.SliderFill})
-                        sliding = false
-                        if not mouseOver then
-                            utility.tween(slider, {0.2}, {BackgroundColor3 = theme.Slider})
-                        end
-                    end
-                end)
-
-                slider.MouseEnter:Connect(function()
-                    mouseOver = true
-                    utility.tween(slider, {0.2}, {BackgroundColor3 = theme.SliderMouseOver})
-                end)
-
-                slider.MouseLeave:Connect(function()
-                    mouseOver = false
-                    if not sliding then
-                        utility.tween(slider, {0.2}, {BackgroundColor3 = theme.Slider})
-                    end
-                end)
-
-                inputService.InputChanged:Connect(function(input)
-                    if input.UserInputType == Enum.UserInputType.MouseMovement then
-                        if sliding then
-                            slide(input)
-                        end
-                    end
-                end)
-
-                local sliderTypes = {}
-                sliderTypes = utility.format_table(sliderTypes)
-
-                function sliderTypes:Set(value)
-                    value = math.floor(value * (decimals * 10)) / (decimals * 10)
-                    value = math.clamp(value, min, max)
-
-                    fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
-                    title.Text = name .. ": " .. value .. valueType
-                end
-
-                function sliderTypes:Hide()
-                    slider.Visible = false
-                end
-
-                function sliderTypes:Show()
-                    slider.Visible = true
-                end
-
-                return sliderTypes
+    slider.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            utility.tween(fill, {0.2}, {BackgroundColor3 = theme.SliderFill})
+            sliding = false
+            if not mouseOver then
+                utility.tween(slider, {0.2}, {BackgroundColor3 = theme.Slider})
             end
+        end
+    end)
+
+    slider.MouseEnter:Connect(function()
+        mouseOver = true
+        utility.tween(slider, {0.2}, {BackgroundColor3 = theme.SliderMouseOver})
+    end)
+
+    slider.MouseLeave:Connect(function()
+        mouseOver = false
+        if not sliding then
+            utility.tween(slider, {0.2}, {BackgroundColor3 = theme.Slider})
+        end
+    end)
+
+    inputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            if sliding then
+                slide(input)
+            end
+        end
+    end)
+
+    local sliderTypes = {}
+    sliderTypes = utility.format_table(sliderTypes)
+
+    function sliderTypes:Set(value)
+        if round then
+            value = math.floor(value * (decimals * 10)) / (decimals * 10)
+        end
+        value = math.clamp(value, min, max)
+
+        fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
+        title.Text = name .. ": " .. value .. valueType
+    end
+
+    function sliderTypes:Hide()
+        slider.Visible = false
+    end
+
+    function sliderTypes:Show()
+        slider.Visible = true
+    end
+
+    return sliderTypes
+end
 
             function sectionTypes:Dropdown(opts)
                 local options = utility.format_table(opts)
