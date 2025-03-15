@@ -750,12 +750,12 @@ function library:Load(opts)
                 return boxTypes
             end
 
-            function sectionTypes:Slider(opts)
+   function sectionTypes:Slider(opts)
     local options = utility.format_table(opts)
     local name = options.name
     local min = options.min or 1
     local max = options.max or 100
-    local round = options.Round
+    local round = opts.Round or true
     local decimals = options.decimals or 0.1
     local default = options.default and math.clamp(options.default, min, max) or min
     local valueType = options.valueType or "/" .. tostring(max)
@@ -807,14 +807,12 @@ function library:Load(opts)
         local sizeX = math.clamp((input.Position.X - slider.AbsolutePosition.X) / slider.AbsoluteSize.X, 0, 1)
         utility.tween(fill, {0.3}, {Size = UDim2.new(sizeX, 0, 1, 0)})
 
-        local value
+        local value = ((max - min) * sizeX) + min
         if round then
-            value = math.floor((((max - min) * sizeX) + min) * (decimals * 10)) / (decimals * 10)
-        else
-            value = (((max - min) * sizeX) + min)
+            value = math.floor(value * (1 / decimals)) * decimals
         end
         
-        title.Text = name .. ": " .. value .. valueType
+        title.Text = name .. ": " .. string.format("%.2f", value) .. valueType
 
         if flag then 
             library.flags[flag] = value
@@ -866,12 +864,12 @@ function library:Load(opts)
 
     function sliderTypes:Set(value)
         if round then
-            value = math.floor(value * (decimals * 10)) / (decimals * 10)
+            value = math.floor(value * (1 / decimals)) * decimals
         end
         value = math.clamp(value, min, max)
 
         fill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0)
-        title.Text = name .. ": " .. value .. valueType
+        title.Text = name .. ": " .. string.format("%.2f", value) .. valueType
     end
 
     function sliderTypes:Hide()
