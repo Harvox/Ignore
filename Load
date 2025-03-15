@@ -755,7 +755,7 @@ function library:Load(opts)
     local name = options.name
     local min = options.min or 1
     local max = options.max or 100
-    local round = options.Round or true
+    local round = options.Round
     local decimals = options.decimals or 0.1
     local default = options.default and math.clamp(options.default, min, max) or min
     local valueType = options.valueType or "/" .. tostring(max)
